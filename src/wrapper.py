@@ -443,11 +443,11 @@ if(topo_source == 'SRTM'  or topo_source == 'Upload_deg'):
 				lim = np.int(polygon[j][4])
 				if( polygon[j][4] == np.int(polygon[j][4]) ):
 					for ii in range(anglen):
-						vector_correc[ii] = vector_backward_1[(ii - polygon[j][4] + index_max) % anglen]
+						vector_correc[ii] = vector_backward_1[int((ii - polygon[j][4] + index_max) % anglen)]
 
 				else:
 					for ii in range(anglen):
-						vector_correc[ii] = vector_backward_2[(ii - polygon[j][4] + index_max) % anglen]
+						vector_correc[ii] = vector_backward_2[int((ii - polygon[j][4] + index_max) % anglen)]
 
 				polygons_new = polygons_new * vector_correc
 
@@ -716,11 +716,11 @@ if(topo_source == 'Upload_UTM'):
 				lim = np.int(polygon[j][4])
 				if( polygon[j][4] == np.int(polygon[j][4]) ):
 					for ii in range(anglen):
-						vector_correc[ii] = vector_backward_1[(ii - polygon[j][4] + index_max) % anglen]
+						vector_correc[ii] = vector_backward_1[int((ii - polygon[j][4] + index_max) % anglen)]
 
 				else:
 					for ii in range(anglen):
-						vector_correc[ii] = vector_backward_2[(ii - polygon[j][4] + index_max) % anglen]
+						vector_correc[ii] = vector_backward_2[int((ii - polygon[j][4] + index_max) % anglen)]
 
 				polygons_new = polygons_new * vector_correc
 
