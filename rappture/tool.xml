@@ -1,0 +1,341 @@
+<?xml version="1.0"?>
+<run><action><label>Select</label></action>
+    <tool>
+  <id>ecmapprob</id>
+  <name>Probability map of PDCs based on the energy cone model</name>
+  <version>
+    <identifier>1.0</identifier>
+    <application>
+      <revision>0</revision>
+      <modified>2015-11-19 09:01:42 -0500 (Thu, 19 Nov 2015)</modified>
+      <installed>2015-11-19 10:29:31 EST</installed>
+      <directory id="top">/home/vhub/alvaroaravena/ecmapprob/repo</directory>
+      <directory id="tool">/home/vhub/alvaroaravena/ecmapprob/repo/rappture</directory>
+    </application>
+  </version>
+        <about>Press Simulate to view results.</about>
+        <command>python @tool/../bin/wrapper.py @driver</command> 
+        <layout>wizard</layout>
+    </tool>
+    <input>
+    <string id="run_name">
+        <about>
+            <label>Simulation name</label>
+            <description></description>
+        </about>
+        <default>Example</default>
+    </string>
+    <choice id="topography">
+        <about>
+            <label>Topography source</label>
+            <description></description>
+        </about>
+        <default>SRTM</default>
+        <option>
+            <about>
+                <label>SRTM 30 m</label>
+                <description></description>
+            </about>
+            <value>SRTM</value>
+        </option>
+        <option>
+            <about>
+                <label>Upload DEM (UTM)</label>
+                <description></description>
+            </about>
+            <value>Upload_UTM</value>
+        </option>
+        <option>
+            <about>
+                <label>Upload DEM (lat, lon)</label>
+                <description></description>
+            </about>
+            <value>Upload_deg</value>
+        </option>
+    </choice>
+    <string id="uploadedFile_UTM">
+        <about>
+            <label>Uploaded elevation model (UTM)</label>
+            <description>Please follow the example scheme</description>
+            <enable>(input.choice(topography) == "Upload_UTM")</enable>
+        </about>
+        <size>70x3</size>
+       <default>Example_1.xml</default>
+    </string>
+    <loader>
+       <about>
+          <label>Upload elevation model</label>
+          <enable>(input.choice(topography) == "Upload_UTM")</enable>
+       </about>
+       <upload>
+          <to>input.string(uploadedFile_UTM)</to>
+       </upload>
+       <new>Example_1.xml</new>
+       <example>*.xml</example>
+       <default>Example_1.xml</default>
+    </loader>
+    <string id="uploadedFile_deg">
+        <about>
+            <label>Uploaded elevation model (lat, lon)</label>
+            <description>Please follow the example scheme</description>
+            <enable>(input.choice(topography) == "Upload_deg")</enable>
+        </about>
+        <size>70x3</size>
+       <default>Example_2.xml</default>
+    </string>
+    <loader>
+       <about>
+          <label>Upload elevation model (lat, lon)</label>
+          <enable>(input.choice(topography) == "Upload_deg")</enable>
+       </about>
+       <upload>
+          <to>input.string(uploadedFile_deg)</to>
+       </upload>
+       <new>Example_2.xml</new>
+       <example>*.xml</example>
+       <default>Example_2.xml</default>
+    </loader>
+    <number id="lon1">
+        <about>
+            <label>Map limits: Longitude 1 (deg)</label>
+            <description></description>
+            <enable>(input.choice(topography) == "SRTM")</enable>
+        </about>
+        <default>-72.9</default>
+        <min>-180.0</min>
+        <max>180.0</max>
+    </number>
+    <number id="lon2">
+        <about>
+            <label>Map limits: Longitude 2 (deg)</label>
+            <description></description>
+            <enable>(input.choice(topography) == "SRTM")</enable>
+        </about>
+        <default>-72.3</default>
+        <min>-180.0</min>
+        <max>180.0</max>
+    </number>
+    <number id="lat1">
+        <about>
+            <label>Map limits: Latitude 1 (deg)</label>
+            <description></description>
+            <enable>(input.choice(topography) == "SRTM")</enable>
+        </about>
+        <default>-43.0</default>
+        <min>-90.0</min>
+        <max>90.0</max>
+    </number>
+    <number id="lat2">
+        <about>
+            <label>Map limits: Latitude 2 (deg)</label>
+            <description></description>
+            <enable>(input.choice(topography) == "SRTM")</enable>
+        </about>
+        <default>-42.7</default>
+        <min>-90.0</min>
+        <max>90.0</max>
+    </number>
+    <choice id="source_type">
+        <about>
+            <label>Geometry of collapse zone</label>
+            <description></description>
+        </about>
+        <default>Punctual</default>
+        <option>
+            <about>
+                <label>Punctual</label>
+                <description></description>
+            </about>
+            <value>Punctual</value>
+        </option>
+        <option>
+            <about>
+                <label>Linear</label>
+                <description></description>
+            </about>
+            <value>Linear</value>
+        </option>
+        <option>
+            <about>
+                <label>Circumference arch</label>
+                <description></description>
+            </about>
+            <value>Radial</value>
+        </option>
+    </choice>
+    <number id="lonc">
+        <about>
+            <label>Center of collapse zone: Longitude (deg)</label>
+            <description></description>
+            <enable>((input.choice(topography) == "SRTM") || (input.choice(topography) == "Upload_deg"))</enable>
+        </about>
+        <default>-72.650</default>
+        <min>-180.0</min>
+        <max>180.0</max>
+    </number>
+    <number id="latc">
+        <about>
+            <label>Center of collapse zone: Latitude (deg)</label>
+            <description></description>
+            <enable>((input.choice(topography) == "SRTM") || (input.choice(topography) == "Upload_deg"))</enable>
+        </about>
+        <default>-42.835</default>
+        <min>-90.0</min>
+        <max>90.0</max>
+    </number>
+    <number id="east">
+        <about>
+            <label>Center of collapse zone: East (m)</label>
+            <description></description>
+            <enable>(input.choice(topography) == "Upload_UTM")</enable>
+        </about>
+        <default>501000</default>
+    </number>
+    <number id="north">
+        <about>
+            <label>Center of collapse zone: North (m)</label>
+            <description></description>
+            <enable>(input.choice(topography) == "Upload_UTM")</enable>
+        </about>
+        <default>4178000</default>
+    </number>
+    <number id="azimuth_lin">
+        <about>
+            <label>Azimuth of the line that define the collapse zone (deg)</label>
+            <description></description>
+            <enable>(input.choice(source_type) == "Linear")</enable>
+        </about>
+        <default>0</default>
+    </number>
+    <number id="length_lin">
+        <about>
+            <label>Length of the line that define the collapse zone (m)</label>
+            <description></description>
+            <enable>(input.choice(source_type) == "Linear")</enable>
+        </about>
+        <default>2000.0</default>
+    </number>
+    <number id="radius_rad">
+        <about>
+            <label>Radius of the circumference arch that define the collapse zone (m)</label>
+            <description></description>
+            <enable>(input.choice(source_type) == "Radial")</enable>
+        </about>
+        <default>2000.0</default>
+    </number>
+    <number id="ang1_rad">
+        <about>
+            <label>Initial angle of the circumference arch that define the collapse zone (deg)</label>
+            <description></description>
+            <enable>(input.choice(source_type) == "Radial")</enable>
+        </about>
+        <default>-60</default>
+    </number>
+    <number id="ang2_rad">
+        <about>
+            <label>Final angle of the circumference arch that define the collapse zone (deg)</label>
+            <description></description>
+            <enable>(input.choice(source_type) == "Radial")</enable>
+        </about>
+        <default>300</default>
+    </number>
+    <number id="varc">
+        <about>
+            <label>Collapse position: Uncertainty (m)</label>
+            <description></description>
+        </about>
+        <default>500.0</default>
+        <min>0.0</min>
+    </number>
+    <number id="h">
+        <about>
+            <label>Collapse height: Expected value (m)</label>
+            <description></description>
+        </about>
+        <default>300.0</default>
+        <min>0.0</min>
+    </number>
+    <number id="varh">
+        <about>
+            <label>Collapse height: Uncertainty (m)</label>
+            <description></description>
+        </about>
+        <default>100.0</default>
+        <min>0.0</min>
+    </number>
+    <number id="hl">
+        <about>
+            <label>H/L: Expected value</label>
+            <description></description>
+        </about>
+        <default>0.50</default>
+        <min>0.05</min>
+    </number>
+    <number id="varhl">
+        <about>
+            <label>H/L: Uncertainty</label>
+            <description></description>
+        </about>
+        <default>0.05</default>
+        <min>0.0</min>
+        <min>0.30</min>
+    </number>
+    <choice id="input_dist">
+        <about>
+            <label>Probability distribution of input parameters</label>
+            <description></description>
+        </about>
+        <default>Gaussian</default>
+        <option>
+            <about>
+                <label>Gaussian</label>
+                <description></description>
+            </about>
+            <value>Gaussian</value>
+        </option>
+        <option>
+            <about>
+                <label>Uniform</label>
+                <description></description>
+            </about>
+            <value>Uniform</value>
+        </option>
+    </choice>
+    <integer id="c_levels">
+        <about>
+            <label>Maximum order of secondary energy cones</label>
+        </about>
+        <default>1</default>
+        <min>1</min>
+        <max>30</max>
+    </integer>
+    <choice id="resolution">
+        <about>
+            <label>Angle resolution of energy cones (deg)</label>
+            <description></description>
+        </about>
+        <default>Ten</default>
+        <option>
+            <about>
+                <label>10.0</label>
+                <description></description>
+            </about>
+            <value>Ten</value>
+        </option>
+        <option>
+            <about>
+                <label>20.0</label>
+                <description></description>
+            </about>
+            <value>Twenty</value>
+        </option>
+    </choice>
+    <integer id="N">
+        <about>
+            <label>Number of simulations</label>
+        </about>
+        <default>100</default>
+        <min>1</min>
+    </integer>
+    </input>
+</run>
