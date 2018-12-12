@@ -7,10 +7,10 @@
     <identifier>1.0</identifier>
     <application>
       <revision>0</revision>
-      <modified>2015-11-19 09:01:42 -0500 (Thu, 19 Nov 2015)</modified>
-      <installed>2015-11-19 10:29:31 EST</installed>
-      <directory id="top">/home/vhub/alvaroaravena/ecmapprob/repo</directory>
-      <directory id="tool">/home/vhub/alvaroaravena/ecmapprob/repo/rappture</directory>
+      <modified>2018-12-10 09:01:42 -0500 (Mon, 10 Dec 2018)</modified>
+      <installed>2018-12-10 10:29:31 EST</installed>
+      <directory id="top">/apps/ecmapprob/r37</directory>
+      <directory id="tool">/apps/ecmapprob/r37/rappture</directory>
     </application>
   </version>
         <about>Press Simulate to view results.</about>
