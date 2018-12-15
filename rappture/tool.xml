@@ -305,7 +305,7 @@
         <about>
             <label>Maximum order of secondary energy cones</label>
         </about>
-        <default>1</default>
+        <default>10</default>
         <min>1</min>
         <max>30</max>
     </integer>
@@ -334,7 +334,7 @@
         <about>
             <label>Number of simulations</label>
         </about>
-        <default>100</default>
+        <default>10</default>
         <min>1</min>
     </integer>
     </input>
