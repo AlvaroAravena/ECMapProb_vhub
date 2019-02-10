@@ -1,4 +1,4 @@
-import Rappture
+#import Rappture
 import elevation
 import tifffile
 import numpy as np
@@ -133,12 +133,7 @@ if(topo_source == 'SRTM'):
 # READ MAP
 if(topo_source == 'SRTM'):
 	fp = run_name + '.tif'
-	with tifffile.TIFFfile(fp) as tif:
-		data = tif.asarray()
-		for page in tif:
-			for tag in page.tags.values():
-				t = tag.name, tag.value
-			image = page.asarray()
+	image = tifffile.imread(fp)
 	elevation.clean()
 	Topography = np.array(image)
 	Topography_Save = Topography
