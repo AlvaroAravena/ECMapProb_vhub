@@ -1,4 +1,4 @@
-#import Rappture
+import Rappture
 import elevation
 import tifffile
 import numpy as np
