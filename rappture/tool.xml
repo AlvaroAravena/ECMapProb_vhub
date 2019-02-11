@@ -268,7 +268,7 @@
             <label>H/L: Expected value</label>
             <description></description>
         </about>
-        <default>0.50</default>
+        <default>0.35</default>
         <min>0.05</min>
     </number>
     <number id="varhl">

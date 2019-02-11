@@ -121,7 +121,6 @@ current_path = os.getcwd()
 
 # IMPORT MAP
 if(topo_source == 'SRTM'):
-
 	aux_lon = np.array([lon1, lon2])
 	aux_lat = np.array([lat1, lat2])
 	lon1 = min(aux_lon)
@@ -133,15 +132,9 @@ if(topo_source == 'SRTM'):
 # READ MAP
 if(topo_source == 'SRTM'):
 	fp = run_name + '.tif'
-	with tifffile.TIFFfile(fp) as tif:
-		data = tif.asarray()
-		for page in tif:
-			for tag in page.tags.values():
-				t = tag.name, tag.value
-			image = page.asarray()
+	image = tifffile.imread(fp)
 	elevation.clean()
 	Topography = np.array(image)
-	Topography_Save = Topography
 
 	Topography_Sea = Topography + 0.0
 	Topography_Sea[ Topography_Sea[:,:] <= 0] = -1.0 * np.sqrt(-1.0 * Topography_Sea[ Topography_Sea[:,:] <= 0])
@@ -184,7 +177,6 @@ if(topo_source == 'Upload_UTM'):
 		aux = lines[i].split()
 		for j in range(0, n_east):
 			Topography[i-indexini,j] = float(aux[j])
-	Topography_Save = Topography
 
 	Topography_Sea = Topography + 0.0
 	Topography_Sea[ Topography_Sea[:,:] <= 0] = -1.0 * np.sqrt(-1.0 * Topography_Sea[ Topography_Sea[:,:] <= 0])
@@ -225,7 +217,6 @@ if(topo_source == 'Upload_deg'):
 		aux = lines[i].split()
 		for j in range(0, cells_lon):
 			Topography[i-indexini,j] = float(aux[j])
-	Topography_Save = Topography
 
 	Topography_Sea = Topography + 0.0
 	Topography_Sea[ Topography_Sea[:,:] <= 0] = -1.0 * np.sqrt(-1.0 * Topography_Sea[ Topography_Sea[:,:] <= 0])
@@ -396,6 +387,7 @@ index_max = anglen/2 - 1
 vector_correc = np.zeros(anglen)
 
 if(topo_source == 'SRTM'  or topo_source == 'Upload_deg'):
+	collapse_data = 'AspectRatio ' + str(step_lat_m/step_lon_m) + '\n' + 'Longitude Latitude' + '\n'
 	data_cones = np.zeros((cells_lat,cells_lon))
 	data_cones_save = np.zeros((cells_lat,cells_lon))
 	data_aux_t = np.ones((cells_lat,cells_lon))
@@ -411,21 +403,16 @@ if(topo_source == 'SRTM'  or topo_source == 'Upload_deg'):
 		polygon.append((lon_cen_vector[i], lat_cen_vector[i],  height_eff, 1.0, -1, height_vector[i] ))
 		sum_pixels = 0
 		hl_current = hl_vector[i]		
+		collapse_data =  collapse_data + str(lon_cen_vector[i]) + ' '+ str(lat_cen_vector[i]) + '\n'
 
 		for j in range(10000): 
 
 			if(j == len(polygon)):
-				if( N == 1 ):			
-					data_cones = data_cones + data_step
 				break
 			if( cone_levels < polygon[j][3] ):
-				if( N == 1 ):
-					data_cones = data_cones + data_step
 				break
 			elif(current_level < polygon[j][3]):
 				current_level = polygon[j][3]
-				if( N == 1 ):
-					data_cones = data_cones + data_step
 
 			polygon_xy = []
 			polygons_new = []
@@ -664,8 +651,7 @@ if(topo_source == 'SRTM'  or topo_source == 'Upload_deg'):
 			sum_pixels = sum(sum(data_step))	
 			print((j, len(polygon), polygon[j][3], polygon[j][2], sum(sum(data_step)), polygon[j][4] ))
 
-		if( N > 1 ):
-			data_cones = data_cones + data_step
+		data_cones = data_cones + data_step
 
 		print(' Simulation finished (N = ' + str(i+1) + ')')
 
@@ -676,6 +662,7 @@ if(topo_source == 'Upload_UTM'):
 	data_aux_t = np.ones((n_north,n_east))
 	data_aux_b = np.zeros((n_north,n_east))
 	vec_ang = range(0, 360, angstep)
+	collapse_data = 'AspectRatio 1.0' + '\n' 'East North' + '\n'
 
 	for i in range(0,N):
 		current_level = 0
@@ -685,20 +672,15 @@ if(topo_source == 'Upload_UTM'):
 		polygon.append((east_cen_vector[i], north_cen_vector[i],  height_eff, 1.0, -1, height_vector[i] ))
 		sum_pixels = 0
 		hl_current = hl_vector[i]
+		collapse_data =  collapse_data + str(east_cen_vector[i]) + ' '+ str(north_cen_vector[i]) + '\n'
 
 		for j in range(10000): 
 			if(j == len(polygon)):
-				if( N == 1 ):			
-					data_cones = data_cones + data_step
 				break
 			if( cone_levels < polygon[j][3] ):
-				if( N == 1 ):
-					data_cones = data_cones + data_step
 				break
 			elif(current_level < polygon[j][3]):
 				current_level = polygon[j][3]
-				if( N == 1 ):
-					data_cones = data_cones + data_step
 
 			polygon_xy = []
 			polygons_new = []
@@ -931,132 +913,38 @@ if(topo_source == 'Upload_UTM'):
 			sum_pixels = sum(sum(data_step))	
 			print((j, len(polygon), polygon[j][3], polygon[j][2], sum(sum(data_step)), polygon[j][4] ))
 
-		if( N > 1 ):
-			data_cones = data_cones + data_step
+		data_cones = data_cones + data_step
 
 		print(' Simulation finished (N = ' + str(i+1) + ')')
 
 if(topo_source == 'SRTM'  or topo_source == 'Upload_deg'):
-
-	data_cones = data_cones[ range(len(data_cones[:,0]) -1 , -1 , -1 ) , : ] / N
-	data_cones_save[:,:] = data_cones[:,:]
-	line_val = data_cones.max()
-	data_cones[data_cones[:,:] == 0] =  np.nan
-	val_up = np.floor((line_val + 0.1 - 1.0 / N ) * 10.0) / 20.0
-	val_down = np.maximum( val_up / 10.0 , 0.02 )
-	plt.figure(1)
-	cmapg = plt.cm.get_cmap('Greys')
-	cmapr = plt.cm.get_cmap('Reds')
-	cmaps = plt.cm.get_cmap('Blues') 
-
-	mng = plt.get_current_fig_manager()
-	mng.full_screen_toggle()
-
-	if( N > 1 ):
-		CS_Topo = plt.contourf(matrix_lon,matrix_lat,Topography, 100, alpha = 1.0, cmap = cmapg ,antialiased=True, lw=0.0001)
-		CS_Sea = plt.contourf(matrix_lon,matrix_lat,Topography_Sea, 100, alpha = 0.5, cmap = cmaps ,antialiased=True, lw=100)
-		CS = plt.contourf(matrix_lon, matrix_lat, data_cones, 100, vmin = 0.0, vmax = 1.0,  alpha= 0.3, interpolation='linear', cmap=cmapr, antialiased=True, lw=0.01)	
-		fmt = '%.2f'
-		plt.colorbar()
-		CS_lines = plt.contour(matrix_lon,matrix_lat,data_cones, np.array([val_down, val_up]), colors='r', interpolation='linear', lw=0.01)
-		plt.clabel(CS_lines, inline=0.1, fontsize = 7, colors='k', fmt=fmt)
-	else:
-		CS_Topo = plt.contourf(matrix_lon,matrix_lat,Topography, 100, alpha = 1.0, cmap = cmapg ,antialiased=True, lw=0.0001)
-		CS_Sea = plt.contourf(matrix_lon,matrix_lat,Topography_Sea, 100, alpha = 0.5, cmap = cmaps ,antialiased=True, lw=100)
-		CS = plt.contourf(matrix_lon, matrix_lat, data_cones, 100, alpha= 0.3, interpolation='nearest', cmap=cmapr, antialiased=True, lw=0.01)
-
-	plt.axes().set_aspect(step_lat_m/step_lon_m)
-	plt.xlabel('Longitude $[^\circ]$')
-	plt.ylabel('Latitude $[^\circ]$')
-	plt.xlim(lon1, lon2 )
-	plt.ylim(lat1, lat2 )
-
-	for i in range(0,N):
-		plt.plot( lon_cen_vector[i], lat_cen_vector[i], 'r.', markersize=2)
-
-	if( N == 1 ):
-		for i in range(1,len(polygon)):
-			plt.plot( polygon[i][0],polygon[i][1], 'b.', markersize=2)
-	try:
-		os.stat('Results')
-	except:
-		os.mkdir('Results')
-	try:
-		os.stat('Results/' + run_name)
-	except:
-		os.mkdir('Results/' + run_name)
-
-	plt.savefig('Results/' + run_name + '/' + 'Map.png', bbox_inches = 'tight')
+	data_cones = data_cones / N
+	Topography = Topography[ range(len(Topography[:,0]) -1 , -1 , -1 ) , : ]
 
 if(topo_source == 'Upload_UTM'):
-
-	data_cones = data_cones[ range(len(data_cones[:,0]) -1 , -1 , -1 ) , : ] / N
-	line_val = data_cones.max()
-	data_cones_save[:,:] = data_cones[:,:]
-	data_cones[data_cones[:,:] == 0] =  np.nan
-	val_up = np.floor((line_val + 0.1 - 1.0 / N ) * 10.0) / 20.0
-	val_down = np.maximum( val_up / 10.0 , 0.02 )
-	plt.figure(1)
-
-	cmapg = plt.cm.get_cmap('Greys')
-	cmapr = plt.cm.get_cmap('Reds')
-	cmaps = plt.cm.get_cmap('Blues') 
-
-	mng = plt.get_current_fig_manager()
-	mng.full_screen_toggle()
-
-	if( N > 1 ):
-		CS_Topo = plt.contourf(matrix_east / 1e3,matrix_north / 1e3,Topography, 100, alpha = 1.0, cmap = cmapg ,antialiased=True, lw=0.0001)
-		CS_Sea = plt.contourf(matrix_east / 1e3,matrix_north / 1e3,Topography_Sea, 100, alpha = 0.5, cmap = cmaps ,antialiased=True, lw=100)
-		CS = plt.contourf(matrix_east / 1e3,matrix_north / 1e3, data_cones, 100, vmin = 0.0, vmax = 1.0,  alpha= 0.3, interpolation='linear', cmap=cmapr, antialiased=True, lw=0.01)	
-		fmt = '%.2f'
-		plt.colorbar()
-		CS_lines = plt.contour(matrix_east / 1e3 ,matrix_north / 1e3, data_cones, np.array([val_down, val_up]), colors='r', interpolation='linear', lw=0.01)
-		plt.clabel(CS_lines, inline=0.1, fontsize = 7, colors='k', fmt=fmt)
-	else:
-		CS_Topo = plt.contourf(matrix_east / 1e3,matrix_north / 1e3,Topography, 100, alpha = 1.0, cmap = cmapg ,antialiased=True, lw=0.0001)
-		CS_Sea = plt.contourf(matrix_east / 1e3,matrix_north / 1e3,Topography_Sea, 100, alpha = 0.5, cmap = cmaps ,antialiased=True, lw=100)
-		CS = plt.contourf(matrix_east / 1e3 ,matrix_north / 1e3 ,data_cones, 100, alpha= 0.3, interpolation='nearest', cmap=cmapr, antialiased=True, lw=0.01)
-
-	plt.axes().set_aspect(1.0)
-	plt.xlabel('East [km]')
-	plt.ylabel('North [km]')
-	plt.xlim((east_cor)/1e3, (east_cor + cellsize * (n_east - 1))/1e3 )
-	plt.ylim((north_cor)/1e3,(north_cor +cellsize * (n_north - 1))/1e3 )
-
-	for i in range(0,N):
-		plt.plot( east_cen_vector[i] / 1e3, north_cen_vector[i] / 1e3, 'r.', markersize = 2 )
-
-	if( N == 1 ):
-		for i in range(1,len(polygon)):
-			plt.plot( polygon[i][0], polygon[i][1], 'b.', markersize = 2 )
-
-	try:
-		os.stat('Results')
-	except:
-		os.mkdir('Results')
-	try:
-		os.stat('Results/' + run_name)
-	except:
-		os.mkdir('Results/' + run_name)
-
-	plt.savefig('Results/' + run_name + '/' + 'Map.png', bbox_inches = 'tight')
-
-log =  log + '\n'   + 'The probability map was saved in Results/' + run_name + '/Map.png'
+	data_cones = data_cones / N
+	Topography = Topography[ range(len(Topography[:,0]) -1 , -1 , -1 ) , : ]
 
 if(N > 1 and var_height >= 1E-5):
-	log =  log + '\n' + 'The histogram of the distribution of collapse height is presented in Histogram Height'
+	log =  log + '\n' + 'The histogram of the distribution of collapse height is presented in Histogram Height.'
 
 if(N > 1 and var_hl >= 1E-5):
-	log =  log + '\n'  + 'The histogram of the distribution of H/L is presented in Histogram H/L'
-	log =  log + '\n' + 'Topography data was saved in Results/' + run_name + '/Topography.txt'
-	log =  log + '\n' + 'Probability data was saved in Results/' + run_name + '/Probability.txt'
-	log =  log + '\n' + 'Mesh data was saved in Results/' + run_name + '/Mesh_East.txt and Results/' + run_name + '/Mesh_North.txt'
+	log =  log + '\n'  + 'The histogram of the distribution of H/L is presented in Histogram H/L.'
+
+log =  log + '\n' + 'Information of collapse position and aspect ratio is presented in Collapse Position (you can download this data).'
+log =  log + '\n' + 'Topography data is presented in Topography (you can download this data).'
+log =  log + '\n' + 'Probability data is presented in Probability (you can download this data).'
+log =  log + '\n' + 'A MATLAB script for plotting results is present in https://github.com/AlvaroAravena/ECMapProb/vhub_script' 
+log =  log + '\n' + '(input parameters should be downloaded from Topography and Probability in .vtk format, and Collapse Position in .txt format).'
 
 j = 0
 
 lib.put('output.log(multi'+str(j)+').about.label','Readme')
 lib.put('output.log(multi'+str(j)+')', log)
+
+j = j + 1
+lib.put('output.log(multi'+str(j)+').about.label','Collapse Position')
+lib.put('output.log(multi'+str(j)+')', collapse_data)
 
 if(var_height >= 1E-5):
 	j = j+1
@@ -1092,16 +980,53 @@ if(var_hl >= 1E-5):
 	lib.put('output.histogram(multi'+str(j)+').yaxis.label','Frequency')
 	lib.put('output.histogram(multi'+str(j)+').component.xy',xy1)
 
+lib.put('output.mesh(multi'+str(j)+').about.label','Mesh')
+lib.put('output.mesh(multi'+str(j)+').dim',2)
+if(topo_source == "SRTM" or topo_source == "Upload_deg"): 
+	lib.put('output.mesh(multi'+str(j)+').grid.xaxis.min',lon1)
+	lib.put('output.mesh(multi'+str(j)+').grid.xaxis.max',lon2)
+	lib.put('output.mesh(multi'+str(j)+').grid.xaxis.numpoints',cells_lon)
+	lib.put('output.mesh(multi'+str(j)+').grid.yaxis.min',lat1)
+	lib.put('output.mesh(multi'+str(j)+').grid.yaxis.max',lat2)
+	lib.put('output.mesh(multi'+str(j)+').grid.yaxis.numpoints',cells_lat)
+if(topo_source == "Upload_UTM"): 
+	lib.put('output.mesh(multi'+str(j)+').grid.xaxis.min',east_cor)
+	lib.put('output.mesh(multi'+str(j)+').grid.xaxis.max',east_cor + cellsize* (n_east-1) )
+	lib.put('output.mesh(multi'+str(j)+').grid.xaxis.numpoints',n_east)
+	lib.put('output.mesh(multi'+str(j)+').grid.yaxis.min',north_cor)
+	lib.put('output.mesh(multi'+str(j)+').grid.yaxis.max',north_cor + cellsize*(n_north-1) )
+	lib.put('output.mesh(multi'+str(j)+').grid.yaxis.numpoints',n_north)
+lib.put('output.mesh(multi'+str(j)+').hide','yes')
 
-np.savetxt('Results/' + run_name + '/Topography.txt', Topography_Save, fmt='%.2e')
-np.savetxt('Results/' + run_name + '/Probability.txt', data_cones_save, fmt='%.2e')
+j = j + 1
+xy1 = "\n".join("\t".join('%0.3f' %x for x in y) for y in Topography) + "\n"
 
-if(topo_source == 'SRTM' or topo_source == 'Upload_deg'):
-	np.savetxt('Results/' + run_name + '/Mesh_East.txt', matrix_lon, fmt='%.2e')
-	np.savetxt('Results/' + run_name + '/Mesh_North.txt', matrix_lat, fmt='%.2e')
-if(topo_source == 'Upload_UTM'):
-	np.savetxt('Results/' + run_name + '/Mesh_East.txt', matrix_east, fmt='%.2e')
-	np.savetxt('Results/' + run_name + '/Mesh_North.txt', matrix_north, fmt='%.2e')
+lib.put('output.field(multi'+str(j)+').about.label','Topography')
+if(topo_source == "SRTM" or topo_source == "Upload_deg"): 
+	lib.put('output.field(multi'+str(j)+').xaxis.label','Latitude [deg]')
+	lib.put('output.field(multi'+str(j)+').yaxis.label','Londitude [deg]')
+if(topo_source == "Upload_UTM"): 
+	lib.put('output.field(multi'+str(j)+').xaxis.label','East [m]')
+	lib.put('output.field(multi'+str(j)+').yaxis.label','North [m]')
+lib.put('output.field(multi'+str(j)+').component.mesh','output.mesh(multi'+str(j-1)+')')
+lib.put('output.field(multi'+str(j)+').component.values',xy1)
+lib.put('output.field(multi'+str(j)+').component.style','-color greyscale -levels 5')
+lib.put('output.field(multi'+str(j)+').xaxis.scale','1.0')
+lib.put('output.field(multi'+str(j)+').yaxis.scale','10.0')
+
+j = j + 1
+xy1 = "\n".join("\t".join('%0.3f' %x for x in y) for y in data_cones) + "\n"
+
+lib.put('output.field(multi'+str(j)+').about.label','Probability')
+if(topo_source == "SRTM" or topo_source == "Upload_deg"): 
+	lib.put('output.field(multi'+str(j)+').xaxis.label','Latitude [deg]')
+	lib.put('output.field(multi'+str(j)+').yaxis.label','Londitude [deg]')
+if(topo_source == "Upload_UTM"): 
+	lib.put('output.field(multi'+str(j)+').xaxis.label','East [m]')
+	lib.put('output.field(multi'+str(j)+').yaxis.label','North [m]')
+lib.put('output.field(multi'+str(j)+').component.mesh','output.mesh(multi'+str(j-2)+')')
+lib.put('output.field(multi'+str(j)+').component.values',xy1)
+lib.put('output.field(multi'+str(j)+').component.style','-color greyscale -levels 5')
 
 Rappture.result(lib)
 
